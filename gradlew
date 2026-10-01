@@ -88,6 +88,25 @@ APP_BASE_NAME=${0##*/}
 # Discard cd standard output in case $CDPATH is set (https://github.com/gradle/gradle/issues/25036)
 APP_HOME=$( cd -P "${APP_HOME:-./}" > /dev/null && printf '%s\n' "$PWD" ) || exit
 
+# Prefer the repo JDK 17. Ubuntu java-25-openjdk is often a JRE without JAVA_COMPILER,
+# which breaks :buildSrc:compileJava.
+if [ -x "$APP_HOME/.jdk17/bin/javac" ]; then
+    JAVA_HOME=$APP_HOME/.jdk17
+    export JAVA_HOME
+elif [ ! -x "${JAVA_HOME:-}/bin/javac" ]; then
+    for candidate in \
+        /usr/lib/jvm/java-17-openjdk-amd64 \
+        /usr/lib/jvm/java-17-openjdk \
+        /usr/lib/jvm/java-17-amazon-corretto
+    do
+        if [ -x "$candidate/bin/javac" ]; then
+            JAVA_HOME=$candidate
+            export JAVA_HOME
+            break
+        fi
+    done
+fi
+
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD=maximum
 

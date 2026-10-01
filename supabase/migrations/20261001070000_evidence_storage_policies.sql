@@ -1,5 +1,15 @@
 -- Private evidence photos: org-prefixed paths; cleaners upload on assigned jobs.
 
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+    'evidence',
+    'evidence',
+    false,
+    10485760,
+    array['image/jpeg', 'image/png', 'image/webp']::text[]
+)
+on conflict (id) do nothing;
+
 create policy evidence_objects_select on storage.objects
 for select to authenticated
 using (
@@ -38,7 +48,7 @@ with check (
             select 1
             from public.service_jobs as job
             where job.organization_id = (select membership.organization_id from private.current_membership() as membership)
-              and job.assigned_to = auth.uid()
+              and job.assigned_user_id = auth.uid()
               and job.id::text = split_part(name, '/', 2)
         )
     )
@@ -79,7 +89,7 @@ with check (
             select 1
             from public.service_jobs as job
             where job.organization_id = (select membership.organization_id from private.current_membership() as membership)
-              and job.assigned_to = auth.uid()
+              and job.assigned_user_id = auth.uid()
               and job.id::text = split_part(name, '/', 2)
         )
     )

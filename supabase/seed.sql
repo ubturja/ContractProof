@@ -2,15 +2,20 @@
 -- UUID map: docs/development/demo-data.md
 -- Auth users must exist in Supabase Auth with matching ids (see demo-mode.md).
 
--- Organization
-insert into public.organizations (id, name, created_by) values
-    ('11111111-1111-4111-8111-111111111101', 'ClearLine Facility Services', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01');
-
+-- Auth users must exist before this seed runs (see demo-mode.md).
 insert into public.users (id, email, display_name) values
     ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'owner@clearline.demo', 'ClearLine Owner'),
     ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa02', 'manager@clearline.demo', 'ClearLine Manager'),
     ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa03', 'cleaner@clearline.demo', 'ClearLine Cleaner'),
     ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa04', 'client@clearline.demo', 'Meridian Client Contact');
+
+insert into public.organizations (id, name, created_by) values
+    ('11111111-1111-4111-8111-111111111101', 'ClearLine Facility Services', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01');
+
+insert into public.clients (id, organization_id, name) values
+    ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', '11111111-1111-4111-8111-111111111101', 'Meridian Office Tower'),
+    ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02', '11111111-1111-4111-8111-111111111101', 'Northstar Logistics'),
+    ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb03', '11111111-1111-4111-8111-111111111101', 'Westbridge Medical Offices');
 
 insert into public.organization_members (organization_id, user_id, role, client_id, location_ids) values
     ('11111111-1111-4111-8111-111111111101', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'owner', null, '{}'),
@@ -24,23 +29,19 @@ insert into public.organization_members (organization_id, user_id, role, client_
         '{}'
     );
 
-insert into public.clients (id, organization_id, name) values
-    ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', '11111111-1111-4111-8111-111111111101', 'Meridian Office Tower'),
-    ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02', '11111111-1111-4111-8111-111111111101', 'Northstar Logistics'),
-    ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb03', '11111111-1111-4111-8111-111111111101', 'Westbridge Medical Offices');
-
 insert into public.locations (id, organization_id, client_id, name, timezone, status) values
     ('cccccccc-cccc-4ccc-8ccc-cccccccccc01', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'Meridian Lobby', 'America/New_York', 'active'),
     ('cccccccc-cccc-4ccc-8ccc-cccccccccc02', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02', 'Northstar Dock Office', 'America/Chicago', 'active'),
     ('cccccccc-cccc-4ccc-8ccc-cccccccccc03', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb03', 'Westbridge Suite 200', 'America/Los_Angeles', 'active');
 
-insert into public.contracts (id, organization_id, client_id, location_id, title, status, is_demo) values
-    ('dddddddd-dddd-4ddd-8ddd-dddddddddd01', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'cccccccc-cccc-4ccc-8ccc-cccccccccc01', 'Meridian nightly clean', 'active', true),
-    ('dddddddd-dddd-4ddd-8ddd-dddddddddd02', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02', 'cccccccc-cccc-4ccc-8ccc-cccccccccc02', 'Northstar weekly service', 'active', true),
-    ('dddddddd-dddd-4ddd-8ddd-dddddddddd03', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb03', 'cccccccc-cccc-4ccc-8ccc-cccccccccc03', 'Westbridge clinic clean', 'active', true);
+insert into public.contracts (id, organization_id, client_id, location_id, title, status, is_demo, starts_on) values
+    ('dddddddd-dddd-4ddd-8ddd-dddddddddd01', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'cccccccc-cccc-4ccc-8ccc-cccccccccc01', 'Meridian nightly clean', 'draft', true, '2026-10-01'),
+    ('dddddddd-dddd-4ddd-8ddd-dddddddddd02', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02', 'cccccccc-cccc-4ccc-8ccc-cccccccccc02', 'Northstar weekly service', 'draft', true, '2026-10-01'),
+    ('dddddddd-dddd-4ddd-8ddd-dddddddddd03', '11111111-1111-4111-8111-111111111101', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb03', 'cccccccc-cccc-4ccc-8ccc-cccccccccc03', 'Westbridge clinic clean', 'draft', true, '2026-10-01');
 
 insert into public.contract_versions (
     id, organization_id, contract_id, version_number, status, bucket, object_path,
+    original_file_name, mime_type, byte_size,
     approved_at, approved_by, created_by, effective_on, is_demo
 ) values
     (
@@ -48,7 +49,8 @@ insert into public.contract_versions (
         '11111111-1111-4111-8111-111111111101',
         'dddddddd-dddd-4ddd-8ddd-dddddddddd01',
         1, 'extracted', 'contracts',
-        '11111111-1111-4111-8111-111111111101/dddddddd-dddd-4ddd-8ddd-dddddddddd01/eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01/contract.pdf',
+        '11111111-1111-4111-8111-111111111101/dddddddd-dddd-4ddd-8ddd-dddddddddd01/eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01.pdf',
+        'meridian-contract.pdf', 'application/pdf', 576,
         null, null, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
         current_date, true
     ),
@@ -56,26 +58,31 @@ insert into public.contract_versions (
         'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02',
         '11111111-1111-4111-8111-111111111101',
         'dddddddd-dddd-4ddd-8ddd-dddddddddd02',
-        1, 'approved', 'contracts',
-        '11111111-1111-4111-8111-111111111101/dddddddd-dddd-4ddd-8ddd-dddddddddd02/eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02/contract.pdf',
-        now(), 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
+        1, 'extracted', 'contracts',
+        '11111111-1111-4111-8111-111111111101/dddddddd-dddd-4ddd-8ddd-dddddddddd02/eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02.pdf',
+        'northstar-contract.pdf', 'application/pdf', 576,
+        null, null, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
         current_date, true
     ),
     (
         'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03',
         '11111111-1111-4111-8111-111111111101',
         'dddddddd-dddd-4ddd-8ddd-dddddddddd03',
-        1, 'approved', 'contracts',
-        '11111111-1111-4111-8111-111111111101/dddddddd-dddd-4ddd-8ddd-dddddddddd03/eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03/contract.pdf',
-        now(), 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
+        1, 'extracted', 'contracts',
+        '11111111-1111-4111-8111-111111111101/dddddddd-dddd-4ddd-8ddd-dddddddddd03/eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03.pdf',
+        'westbridge-contract.pdf', 'application/pdf', 576,
+        null, null, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
         current_date, true
     );
 
-update public.contracts set current_version_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01'
+update public.contracts
+set current_version_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', status = 'active'
 where id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd01';
-update public.contracts set current_version_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02'
+update public.contracts
+set current_version_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02', status = 'active'
 where id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd02';
-update public.contracts set current_version_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03'
+update public.contracts
+set current_version_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03', status = 'active'
 where id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd03';
 
 update public.contract_versions
@@ -134,8 +141,15 @@ where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01';
 insert into public.contract_requirements (
     id, organization_id, contract_version_id, sort_order, requirement_text, requires_photo, is_mandatory, source
 ) values
-    ('ffffffff-ffff-4fff-8fff-fffffffffff04', '11111111-1111-4111-8111-111111111101', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02', 0, 'Sweep loading dock', true, true, 'manual'),
-    ('ffffffff-ffff-4fff-8fff-fffffffffff05', '11111111-1111-4111-8111-111111111101', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02', 1, 'Sanitize break room', true, true, 'manual');
+    ('ffffffff-ffff-4fff-8fff-fffffffff004', '11111111-1111-4111-8111-111111111101', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02', 0, 'Sweep loading dock', true, true, 'manual'),
+    ('ffffffff-ffff-4fff-8fff-fffffffff005', '11111111-1111-4111-8111-111111111101', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02', 1, 'Sanitize break room', true, true, 'manual');
+
+update public.contract_versions
+set status = 'approved', approved_at = now(), approved_by = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01'
+where id in (
+    'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02',
+    'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03'
+);
 
 -- Completed disputed job (client portal). Meridian Today job is created after owner approves ee01 (visit weekday 4).
 insert into public.service_jobs (
@@ -164,8 +178,8 @@ insert into public.service_job_requirements (
     id, organization_id, service_job_id, contract_requirement_id,
     requirement_text, requires_photo, is_mandatory, sort_order, status
 ) values
-    ('88888888-8888-4888-8888-888888888803', '11111111-1111-4111-8111-111111111101', '99999999-9999-4999-8999-999999999902', 'ffffffff-ffff-4fff-8fff-fffffffffff04', 'Sweep loading dock', true, true, 0, 'satisfied'),
-    ('88888888-8888-4888-8888-888888888804', '11111111-1111-4111-8111-111111111101', '99999999-9999-4999-8999-999999999902', 'ffffffff-ffff-4fff-8fff-fffffffffff05', 'Sanitize break room', true, true, 1, 'exception');
+    ('88888888-8888-4888-8888-888888888803', '11111111-1111-4111-8111-111111111101', '99999999-9999-4999-8999-999999999902', 'ffffffff-ffff-4fff-8fff-fffffffff004', 'Sweep loading dock', true, true, 0, 'missing'),
+    ('88888888-8888-4888-8888-888888888804', '11111111-1111-4111-8111-111111111101', '99999999-9999-4999-8999-999999999902', 'ffffffff-ffff-4fff-8fff-fffffffff005', 'Sanitize break room', true, true, 1, 'missing');
 
 insert into public.evidence_records (
     id, organization_id, service_job_id, service_job_requirement_id,
@@ -213,6 +227,11 @@ insert into public.exceptions (
         'Area blocked — Dock gate locked',
         'uploaded'
     );
+
+update public.service_job_requirements set status = 'satisfied'
+where id = '88888888-8888-4888-8888-888888888803';
+update public.service_job_requirements set status = 'exception'
+where id = '88888888-8888-4888-8888-888888888804';
 
 insert into public.disputes (
     id, organization_id, client_id, location_id, service_date, complaint,

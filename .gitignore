@@ -4,6 +4,7 @@ local.properties
 androidApp/google-services.json
 .env
 .env.*
+setup.env
 .idea/
 .kotlin/
 *.iml

@@ -41,7 +41,8 @@ values (
     false,
     20971520,
     array['application/pdf']::text[]
-);
+)
+on conflict (id) do nothing;
 
 create policy contracts_objects_select on storage.objects
 for select to authenticated

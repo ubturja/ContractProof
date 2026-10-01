@@ -5,8 +5,11 @@ Demo mode uses **real sign-in**, **RLS**, and rows in [`supabase/seed.sql`](../s
 ## 1. Reset database with seed
 
 ```bash
+supabase start
 supabase db reset
 ```
+
+`db reset` without flags targets the **local** stack. Hosted project: `supabase db reset --linked` (after `supabase link`) or `./scripts/setup-clearline-demo.sh`.
 
 ## 2. Create Auth users
 

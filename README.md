@@ -123,9 +123,17 @@ The app sends contract **storage references** to Edge Functions. Functions extra
 
 SQLDelight holds jobs, requirements, and an upload outbox. Photos stay on disk until upload succeeds. UI shows per-item sync state; pending upload does not count as missing evidence.
 
+## App icon
+
+1024×1024 master icon for store listings and hackathon submission (no device frame, no text):
+
+![ContractProof app icon](docs/assets/app-icon-1024.png)
+
+Source: [`docs/design/icon-1024.png`](docs/design/icon-1024.png) · Brand spec: [`docs/design/app-icon.md`](docs/design/app-icon.md)
+
 ## Screenshots
 
-Hackathon captures (ClearLine demo data). Replace reference frames with device captures per [docs/qa/screenshots.md](docs/qa/screenshots.md).
+Frameless UI captures (ClearLine demo copy) rendered from the real Compose screens. Regenerate: `./scripts/export-marketing-screenshots.sh` (requires a connected emulator). See [docs/qa/screenshots.md](docs/qa/screenshots.md).
 
 | | |
 |---|---|

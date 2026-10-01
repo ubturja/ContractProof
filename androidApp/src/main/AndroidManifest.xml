@@ -15,6 +15,9 @@
         android:label="ContractProof"
         android:supportsRtl="true"
         android:theme="@style/Theme.ContractProof">
+        <meta-data
+            android:name="io.sentry.auto-init"
+            android:value="false" />
         <service
             android:name=".ContractProofFirebaseMessagingService"
             android:exported="false">

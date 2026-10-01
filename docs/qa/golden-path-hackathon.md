@@ -4,7 +4,7 @@ Multi-role script for a ~2 minute demo. **Canonical sequence:** [final-golden-fl
 
 ## Prerequisites
 
-1. `supabase db reset`
+1. `supabase start` then `supabase db reset` (local). Hosted: `supabase db reset --linked` or `./scripts/setup-clearline-demo.sh`
 2. Auth users (fixed UUIDs) with shared password from demo-data
 3. `./supabase/seed/upload-assets.sh`
 4. Debug APK with Supabase config; optional `DEMO_SHOW_CREDENTIALS=true`, `DEMO_BYPASS_SUBSCRIPTION=true` for **recording only**

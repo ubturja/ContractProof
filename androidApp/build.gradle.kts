@@ -23,6 +23,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation("org.jetbrains.compose.ui:ui-test-junit4:${libs.versions.compose.get()}")
+    androidTestImplementation(libs.kotlinx.datetime)
 }
 
 val keystorePropertiesFile = rootProject.layout.projectDirectory.file("keystore.properties").asFile
