@@ -12,6 +12,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import com.contractproof.domain.SubscriptionPlan
+import com.contractproof.domain.SubscriptionSnapshot
+import com.contractproof.domain.SubscriptionStatus
+import com.contractproof.core.analytics.NoOpProductAnalytics
+import com.contractproof.subscription.FakeSubscriptionService
 import kotlinx.coroutines.runBlocking
 
 class LocationsControllerTest {
@@ -20,7 +25,7 @@ class LocationsControllerTest {
         val organizations = FixedOrganizationGateway(role = "owner")
         val gateway = MemoryLocationGateway(organizations)
         gateway.registerClient("c1", organizations.membership.organizationId)
-        val controller = LocationsController(organizations, gateway)
+        val controller = LocationsController(organizations, gateway, proSubscription(), NoOpProductAnalytics())
         controller.refresh()
         controller.updateDraftName("Lobby")
         controller.updateDraftTimezone("America/New_York")
@@ -69,7 +74,7 @@ class LocationsControllerTest {
                 status = LocationRules.Active,
             ),
         )
-        val controller = LocationsController(organizations, gateway)
+        val controller = LocationsController(organizations, gateway, proSubscription(), NoOpProductAnalytics())
         controller.refresh()
         assertTrue(controller.state.value.items.isEmpty())
         assertEquals(0, gateway.rows.size)
@@ -107,7 +112,7 @@ class LocationsControllerTest {
                 status = LocationRules.Active,
             ),
         )
-        val controller = LocationsController(organizations, gateway)
+        val controller = LocationsController(organizations, gateway, proSubscription(), NoOpProductAnalytics())
         controller.refresh()
         assertEquals(listOf("assigned"), controller.state.value.items.map { it.id })
         assertFalse(controller.state.value.canWrite)
@@ -126,6 +131,49 @@ class LocationsControllerTest {
         assertEquals(LocationRules.Active, controller.state.value.items.single().status)
         assertEquals(0, gateway.writes)
     }
+
+    @Test
+    fun freePlanBlocksSecondActiveLocation() = runBlocking {
+        val organizations = FixedOrganizationGateway(role = "owner")
+        val gateway = MemoryLocationGateway(organizations)
+        gateway.registerClient("c1", organizations.membership.organizationId)
+        val subscription = FakeSubscriptionService(
+            initial = SubscriptionSnapshot(
+                plan = SubscriptionPlan.Free,
+                status = SubscriptionStatus.Active,
+            ),
+        )
+        val controller = LocationsController(organizations, gateway, subscription, NoOpProductAnalytics())
+        controller.refresh()
+        controller.updateDraftName("Lobby")
+        controller.updateDraftTimezone("America/New_York")
+        controller.create("c1")
+        assertEquals(1, controller.state.value.items.size)
+        controller.updateDraftName("Annex")
+        controller.create("c1")
+        assertEquals(1, controller.state.value.items.size)
+        assertTrue(controller.state.value.needsUpgrade)
+    }
+
+    @Test
+    fun refreshNetworkFailureSetsBanner() = runBlocking {
+        val organizations = FixedOrganizationGateway(role = "owner")
+        val gateway = MemoryLocationGateway(organizations)
+        gateway.listFailure = LocationFailure.Network
+        val controller = LocationsController(organizations, gateway, proSubscription(), NoOpProductAnalytics())
+        controller.refresh()
+        assertFalse(controller.state.value.loading)
+        assertEquals("You need a connection to load locations.", controller.state.value.banner)
+    }
+}
+
+private fun proSubscription(): FakeSubscriptionService {
+    return FakeSubscriptionService(
+        initial = SubscriptionSnapshot(
+            plan = SubscriptionPlan.Pro,
+            status = SubscriptionStatus.Active,
+        ),
+    )
 }
 
 private class FixedOrganizationGateway(
@@ -152,6 +200,7 @@ private class MemoryLocationGateway(
     val rows = mutableListOf<LocationRecord>()
     private val clients = mutableMapOf<String, String>()
     var writes: Int = 0
+    var listFailure: LocationFailure? = null
 
     fun registerClient(clientId: String, organizationId: String) {
         clients[clientId] = organizationId
@@ -164,7 +213,10 @@ private class MemoryLocationGateway(
         rows += record
     }
 
-    override suspend fun list(): List<LocationRecord> = rows.toList()
+    override suspend fun list(): List<LocationRecord> {
+        listFailure?.let { throw it }
+        return rows.toList()
+    }
 
     override suspend fun create(
         clientId: String,

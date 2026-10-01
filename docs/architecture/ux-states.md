@@ -66,15 +66,23 @@ Sync states used on evidence and in the banner: `pending`, `uploading`, `uploade
 - **Permission denied:** a signed-in cleaner or client who reaches this route is sent to their own home. They do not see the form.
 - **Retry:** submit the same name again. Retry does not create a second organization.
 
-## ClientHold
+## ClientHome
 
-- **Loading:** does not apply.
-- **Empty:** does not apply.
-- **Success:** one explanation that service review and disputes are not in the field app, plus sign out.
-- **Error:** does not apply.
-- **Offline:** the explanation still shows.
-- **Permission denied:** does not apply. This screen is the client’s only Android destination.
-- **Retry:** does not apply.
+- **Loading:** placeholders for completed service records.
+- **Empty:** “No completed services yet.”
+- **Success:** completed jobs with location, date, and coverage percent.
+- **Error:** refresh failed; banner explains the connection or permission problem.
+- **Offline:** cached list stays when available; otherwise connection message.
+- **Permission denied:** does not apply for the client role on this route.
+- **Retry:** refresh the list.
+
+## ClientServiceRecord
+
+Same factual read model as **ServiceRecord** (see below): location, date, tasks, evidence, exceptions, acknowledgements. **Report an issue** opens client dispute create.
+
+## ClientDisputeConfirmation
+
+- **Success:** static confirmation that the dispute was received; **Back to services** returns to `ClientHome`.
 
 ## Dashboard
 

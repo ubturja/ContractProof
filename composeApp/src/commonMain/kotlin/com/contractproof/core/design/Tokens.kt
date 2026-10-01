@@ -26,4 +26,5 @@ object CpStatusColors {
 
 object CpTouch {
     val buttonHeight = 56.dp
+    val minTarget = 48.dp
 }

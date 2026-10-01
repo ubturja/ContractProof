@@ -1,0 +1,40 @@
+CREATE TABLE service_job_requirement (
+    id TEXT NOT NULL PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    service_job_id TEXT NOT NULL,
+    contract_requirement_id TEXT NOT NULL,
+    requirement_text TEXT NOT NULL,
+    requires_photo INTEGER NOT NULL,
+    is_mandatory INTEGER NOT NULL,
+    sort_order INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    FOREIGN KEY(service_job_id) REFERENCES service_job(id) ON DELETE CASCADE
+);
+
+CREATE INDEX service_job_requirement_job_idx
+    ON service_job_requirement(service_job_id);
+
+selectForJob:
+SELECT *
+FROM service_job_requirement
+WHERE organization_id = ?
+  AND service_job_id = ?
+ORDER BY sort_order;
+
+upsert:
+INSERT OR REPLACE INTO service_job_requirement(
+    id,
+    organization_id,
+    service_job_id,
+    contract_requirement_id,
+    requirement_text,
+    requires_photo,
+    is_mandatory,
+    sort_order,
+    status
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteForJob:
+DELETE FROM service_job_requirement
+WHERE organization_id = ?
+  AND service_job_id = ?;

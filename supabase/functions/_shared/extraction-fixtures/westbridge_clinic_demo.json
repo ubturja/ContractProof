@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "extracted_at": "2026-10-01T14:00:00Z",
+  "pipeline": {
+    "text_engine": "unpdf",
+    "llm_provider": "gemini",
+    "llm_model": "demo-fixture",
+    "used_fallback": false
+  },
+  "document": {
+    "page_count": 2,
+    "text_char_count": 1800,
+    "ocr_page_indexes": [],
+    "warnings": []
+  },
+  "visits": [
+    {
+      "weekday": 3,
+      "start_time": "07:00",
+      "end_time": "09:00",
+      "timezone": "America/Los_Angeles",
+      "starts_on": "2026-10-01",
+      "ends_on": null,
+      "confidence": 0.95
+    }
+  ],
+  "requirements": [
+    {
+      "key": "req_wb_1",
+      "task": "Disinfect exam chairs",
+      "requires_photo": true,
+      "is_mandatory": true,
+      "zone_code": null,
+      "confidence": 0.93,
+      "evidence_quote": "Exam chairs shall be disinfected after each clinic day"
+    },
+    {
+      "key": "req_wb_2",
+      "task": "Sanitize waiting room touchpoints",
+      "requires_photo": true,
+      "is_mandatory": true,
+      "zone_code": null,
+      "confidence": 0.91,
+      "evidence_quote": "Waiting room surfaces wiped nightly"
+    }
+  ]
+}

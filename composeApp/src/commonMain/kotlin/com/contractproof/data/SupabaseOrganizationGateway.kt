@@ -49,6 +49,7 @@ class SupabaseOrganizationGateway(
                     role = "owner",
                     locationIds = emptyList(),
                     clientId = null,
+                    userId = user.id,
                 )
         } catch (error: Throwable) {
             if (error is CancellationException) throw error
@@ -144,6 +145,7 @@ class SupabaseOrganizationGateway(
             role = member.role,
             locationIds = member.locationIds,
             clientId = member.clientId,
+            userId = userId,
         )
     }
 }

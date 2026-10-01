@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["header", "sections"],
+  "properties": {
+    "header": {
+      "type": "object",
+      "required": ["clientName", "locationName", "serviceDate", "complaint", "disputedRequirement", "contractTitle", "versionLabel"],
+      "properties": {
+        "clientName": { "type": "string" },
+        "locationName": { "type": "string" },
+        "serviceDate": { "type": "string" },
+        "complaint": { "type": "string" },
+        "disputedRequirement": { "type": "string" },
+        "contractTitle": { "type": "string" },
+        "versionLabel": { "type": "string" }
+      }
+    },
+    "sections": { "type": "object" }
+  }
+}

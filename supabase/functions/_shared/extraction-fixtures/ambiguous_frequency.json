@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "extracted_at": "2026-10-01T12:00:00Z",
+  "pipeline": {
+    "text_engine": "unpdf",
+    "llm_provider": "groq",
+    "llm_model": "llama-3.3-70b-versatile",
+    "used_fallback": true
+  },
+  "document": {
+    "page_count": 4,
+    "text_char_count": 3100,
+    "ocr_page_indexes": [2],
+    "warnings": [
+      "Visit frequency ambiguous: contract mentions both weekly and biweekly service."
+    ]
+  },
+  "visits": [],
+  "requirements": [
+    {
+      "key": "req_floor",
+      "task": "Mop main hallway",
+      "requires_photo": true,
+      "is_mandatory": true,
+      "zone_code": null,
+      "confidence": 0.82,
+      "evidence_quote": "Hallways maintained"
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 package com.contractproof.core.design
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,7 +69,13 @@ fun CpTitleBar(
                 }
             }
         },
-        actions = actions,
+        actions = {
+            Row(
+                modifier = Modifier.heightIn(min = CpTouch.minTarget),
+                verticalAlignment = Alignment.CenterVertically,
+                content = actions,
+            )
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surface,
             titleContentColor = MaterialTheme.colorScheme.onSurface,

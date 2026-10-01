@@ -50,6 +50,8 @@ data class Access(
     val canManageSubscription: Boolean,
     val canInviteMembers: Boolean,
     val canOpenAssignedJobs: Boolean,
+    val canOpenClientServiceRecords: Boolean,
+    val canFileClientDispute: Boolean,
     val canOpenSettings: Boolean,
 ) {
     companion object {
@@ -70,6 +72,8 @@ data class Access(
             canManageSubscription = false,
             canInviteMembers = false,
             canOpenAssignedJobs = false,
+            canOpenClientServiceRecords = false,
+            canFileClientDispute = false,
             canOpenSettings = false,
         )
 
@@ -92,6 +96,8 @@ data class Access(
                     canManageSubscription = true,
                     canInviteMembers = true,
                     canOpenAssignedJobs = true,
+                    canOpenClientServiceRecords = false,
+                    canFileClientDispute = false,
                     canOpenSettings = true,
                 )
                 Role.Manager -> Access(
@@ -111,6 +117,8 @@ data class Access(
                     canManageSubscription = false,
                     canInviteMembers = false,
                     canOpenAssignedJobs = false,
+                    canOpenClientServiceRecords = false,
+                    canFileClientDispute = false,
                     canOpenSettings = true,
                 )
                 Role.Cleaner -> Access(
@@ -130,6 +138,8 @@ data class Access(
                     canManageSubscription = false,
                     canInviteMembers = false,
                     canOpenAssignedJobs = true,
+                    canOpenClientServiceRecords = false,
+                    canFileClientDispute = false,
                     canOpenSettings = true,
                 )
                 Role.Client -> Access(
@@ -149,7 +159,9 @@ data class Access(
                     canManageSubscription = false,
                     canInviteMembers = false,
                     canOpenAssignedJobs = false,
-                    canOpenSettings = false,
+                    canOpenClientServiceRecords = true,
+                    canFileClientDispute = true,
+                    canOpenSettings = true,
                 )
             }
         }

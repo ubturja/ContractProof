@@ -1,0 +1,97 @@
+ALTER TABLE evidence_file ADD COLUMN upload_percent INTEGER;
+
+CREATE TABLE user_context (
+    user_id TEXT NOT NULL PRIMARY KEY,
+    email TEXT NOT NULL,
+    organization_id TEXT NOT NULL,
+    organization_name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    location_ids_json TEXT NOT NULL,
+    client_id TEXT,
+    cached_at TEXT NOT NULL
+);
+
+CREATE TABLE service_job (
+    id TEXT NOT NULL PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    client_id TEXT NOT NULL,
+    client_name TEXT NOT NULL,
+    location_id TEXT NOT NULL,
+    location_name TEXT NOT NULL,
+    location_timezone TEXT NOT NULL,
+    service_date TEXT NOT NULL,
+    scheduled_start TEXT NOT NULL,
+    scheduled_end TEXT NOT NULL,
+    assignee_user_id TEXT,
+    assignee_display_name TEXT,
+    status TEXT NOT NULL,
+    started_at TEXT,
+    completed_at TEXT,
+    completed_by TEXT,
+    contract_id TEXT NOT NULL,
+    contract_version_id TEXT NOT NULL,
+    schedule_id TEXT,
+    mandatory_total INTEGER NOT NULL,
+    mandatory_satisfied INTEGER NOT NULL,
+    coverage_percent INTEGER NOT NULL,
+    evidence_state TEXT NOT NULL,
+    sync_status TEXT NOT NULL,
+    is_demo INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX service_job_assignee_date_idx
+    ON service_job(organization_id, assignee_user_id, service_date);
+
+CREATE TABLE service_job_requirement (
+    id TEXT NOT NULL PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    service_job_id TEXT NOT NULL,
+    contract_requirement_id TEXT NOT NULL,
+    requirement_text TEXT NOT NULL,
+    requires_photo INTEGER NOT NULL,
+    is_mandatory INTEGER NOT NULL,
+    sort_order INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    FOREIGN KEY(service_job_id) REFERENCES service_job(id) ON DELETE CASCADE
+);
+
+CREATE INDEX service_job_requirement_job_idx
+    ON service_job_requirement(service_job_id);
+
+CREATE TABLE task_exception (
+    id TEXT NOT NULL PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    service_job_id TEXT NOT NULL,
+    service_job_requirement_id TEXT NOT NULL,
+    recorded_by TEXT NOT NULL,
+    recorded_at TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    sync_status TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX task_exception_requirement_key
+    ON task_exception(organization_id, service_job_requirement_id);
+
+CREATE TABLE sync_metadata (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+CREATE TABLE sync_outbox (
+    id TEXT NOT NULL PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    service_job_id TEXT NOT NULL,
+    requirement_id TEXT,
+    dedupe_key TEXT NOT NULL,
+    sync_status TEXT NOT NULL,
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    next_retry_at TEXT NOT NULL,
+    last_error TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX sync_outbox_dedupe_key ON sync_outbox(dedupe_key);
+
+CREATE INDEX sync_outbox_ready_idx ON sync_outbox(sync_status, next_retry_at);

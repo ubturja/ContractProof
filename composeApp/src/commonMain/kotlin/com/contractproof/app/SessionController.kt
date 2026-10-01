@@ -6,6 +6,9 @@ import com.contractproof.data.OrganizationFailure
 import com.contractproof.data.OrganizationGateway
 import com.contractproof.domain.Access
 import com.contractproof.domain.Home
+import com.contractproof.core.analytics.ProductAnalytics
+import com.contractproof.core.analytics.ProductEvent
+import com.contractproof.domain.SubscriptionService
 import com.contractproof.feature.auth.AuthController
 import com.contractproof.feature.auth.AuthPhase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +39,8 @@ class SessionController(
     val auth: AuthController,
     private val organizations: OrganizationGateway,
     private val users: AuthGateway,
+    private val subscription: SubscriptionService,
+    private val analytics: ProductAnalytics,
 ) {
     private val destinationState = MutableStateFlow(SessionDestination.Restoring)
     val destination: StateFlow<SessionDestination> = destinationState.asStateFlow()
@@ -79,6 +84,8 @@ class SessionController(
 
     suspend fun signOut() {
         auth.signOut()
+        analytics.setUserContext(organizationId = null, role = null)
+        subscription.onSignedOut()
         membershipState.value = null
         setupState.value = CompanySetupState()
         destinationState.value = SessionDestination.SignedOut
@@ -106,6 +113,8 @@ class SessionController(
                 displayName = setupState.value.displayName,
             )
             membershipState.value = created
+            analytics.setUserContext(created.organizationId, created.role)
+            analytics.track(ProductEvent.OrganizationCreated(created.organizationId))
             setupState.update { it.copy(saving = false, banner = null) }
             destinationState.value = destinationFor(created)
         } catch (failure: OrganizationFailure) {
@@ -126,11 +135,13 @@ class SessionController(
     private suspend fun resolveDestination() {
         if (auth.state.value.phase != AuthPhase.SignedIn) {
             membershipState.value = null
+            subscription.onSignedOut()
             destinationState.value = SessionDestination.SignedOut
             return
         }
         if (users.currentUser() == null) {
             membershipState.value = null
+            subscription.onSignedOut()
             destinationState.value = SessionDestination.SignedOut
             return
         }
@@ -140,6 +151,13 @@ class SessionController(
             null
         }
         membershipState.value = found
+        if (found != null) {
+            analytics.setUserContext(found.organizationId, found.role)
+            subscription.onSignedIn(found.organizationId)
+            subscription.refresh()
+        } else {
+            analytics.setUserContext(organizationId = null, role = null)
+        }
         destinationState.value = destinationFor(found)
     }
 }

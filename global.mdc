@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+# Execution scope
+
+- Work only on the requested task.
+- Do not implement future phases.
+- Do not refactor unrelated code.
+- Do not introduce new libraries unless necessary.
+- Preserve the existing architecture.
+- After implementation, run the most relevant tests or build validation and stop.

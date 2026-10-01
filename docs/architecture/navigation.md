@@ -17,7 +17,7 @@ After register or login:
 - Owner with no organization goes to `CompanySetup`, then `Dashboard`.
 - Owner or manager with an organization goes to `Dashboard`.
 - Cleaner goes to `Today`.
-- Client goes to `ClientHold`.
+- Client goes to `ClientHome`.
 
 `CompanySetup` is owner-only and runs once.
 
@@ -43,7 +43,7 @@ The cleaner does not open contracts, billing, or dispute reports.
 
 ## Client flow
 
-This Android MVP has no client product flow. `ClientHold` tells a signed-in client that service review and disputes are not available in the field app yet. There is no client navigation stack.
+A signed-in **client** lands on `ClientHome` (completed service list). They open `ClientServiceRecord` for a read-only timeline (tasks, evidence, exceptions, acknowledgements), then `ClientDisputeCreate` and `ClientDisputeConfirmation` to file an issue. Clients do not open the owner dashboard, contracts, or cleaner job execution. Sign out is on the client home title bar.
 
 ## Contract flow
 
@@ -86,7 +86,7 @@ flowchart TD
   setup[CompanySetup]
   dashboard[Dashboard]
   today[Today]
-  hold[ClientHold]
+  hold[ClientHome]
   locations[Locations]
   locationDetail[LocationDetail]
   contracts[Contracts]
@@ -154,7 +154,7 @@ Demo mode may switch from the owner shell to the cleaner shell and back without 
 
 ## Screen list
 
-Auth: `Splash`, `Onboarding`, `Login`, `Register`, `CompanySetup`, `ClientHold`.
+Auth: `Splash`, `Onboarding`, `Login`, `Register`, `CompanySetup`, `ClientHome`.
 
 Owner shell: `Dashboard`, `Locations`, `LocationDetail`, `Contracts`, `ContractUpload`, `ExtractionReview`, `ServiceHistory`, `ServiceRecord`, `Disputes`, `DisputeCreate`, `DisputeDetail`, `ReportPreview`.
 

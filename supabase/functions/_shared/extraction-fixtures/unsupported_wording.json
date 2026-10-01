@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "extracted_at": "2026-10-01T12:00:00Z",
+  "pipeline": {
+    "text_engine": "unpdf",
+    "llm_provider": "gemini",
+    "llm_model": "gemini-2.0-flash",
+    "used_fallback": false
+  },
+  "document": {
+    "page_count": 1,
+    "text_char_count": 900,
+    "ocr_page_indexes": [],
+    "warnings": [
+      "Unsupported phrasing normalized for req_misc: vendor shall keep premises tidy."
+    ]
+  },
+  "visits": [
+    {
+      "weekday": 5,
+      "start_time": "06:00",
+      "end_time": "08:00",
+      "timezone": "America/Chicago",
+      "starts_on": "2026-10-01",
+      "ends_on": null,
+      "confidence": 0.55
+    }
+  ],
+  "requirements": [
+    {
+      "key": "req_misc",
+      "task": "Keep premises tidy",
+      "requires_photo": false,
+      "is_mandatory": false,
+      "zone_code": null,
+      "confidence": 0.45,
+      "evidence_quote": "Vendor shall keep premises tidy"
+    }
+  ]
+}

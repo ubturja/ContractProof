@@ -4,8 +4,12 @@ import com.contractproof.data.LocationFailure
 import com.contractproof.data.LocationGateway
 import com.contractproof.data.OrganizationGateway
 import com.contractproof.domain.Access
+import com.contractproof.domain.Entitlements
 import com.contractproof.domain.LocationRecord
 import com.contractproof.domain.LocationRules
+import com.contractproof.core.analytics.ProductAnalytics
+import com.contractproof.core.analytics.ProductEvent
+import com.contractproof.domain.SubscriptionService
 import com.contractproof.domain.Role
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,9 +26,12 @@ data class LocationsUiState(
     val draftTimezone: String = "",
     val draftAddress: String = "",
     val draftZoneCode: String = "",
+    val needsUpgrade: Boolean = false,
+    val atLocationLimit: Boolean = false,
 ) {
     val canCreate: Boolean
         get() = canWrite &&
+            !atLocationLimit &&
             draftName.trim().isNotEmpty() &&
             draftTimezone.trim().isNotEmpty() &&
             !loading &&
@@ -38,6 +45,8 @@ data class LocationsUiState(
 class LocationsController(
     private val organizations: OrganizationGateway,
     private val locations: LocationGateway,
+    private val subscription: SubscriptionService,
+    private val analytics: ProductAnalytics,
 ) {
     private val ui = MutableStateFlow(LocationsUiState())
     val state: StateFlow<LocationsUiState> = ui.asStateFlow()
@@ -72,14 +81,37 @@ class LocationsController(
             }
             return
         }
-        ui.update { it.copy(loading = true, banner = null, canWrite = access.canAddLocation) }
+        val snapshot = subscription.state.value
+        ui.update {
+            it.copy(
+                loading = true,
+                banner = null,
+                canWrite = access.canAddLocation,
+                needsUpgrade = false,
+            )
+        }
         try {
             val items = LocationRules.visibleTo(
                 locations = locations.list(),
                 role = Role.from(membership?.role),
                 locationIds = membership?.locationIds.orEmpty(),
             )
-            ui.update { it.copy(loading = false, items = items, banner = null) }
+            val limitReached = Entitlements.locationLimitReached(
+                snapshot,
+                items.count { it.status == LocationRules.Active },
+            )
+            ui.update {
+                it.copy(
+                    loading = false,
+                    items = items,
+                    banner = if (limitReached && access.canAddLocation) {
+                        "Your plan includes one active location. Upgrade for more."
+                    } else {
+                        null
+                    },
+                    atLocationLimit = limitReached,
+                )
+            }
         } catch (failure: LocationFailure) {
             ui.update { latest ->
                 latest.copy(
@@ -98,8 +130,29 @@ class LocationsController(
         }
     }
 
+    fun clearUpgradeSignal() {
+        ui.update { it.copy(needsUpgrade = false) }
+    }
+
     suspend fun create(clientId: String) {
         val current = ui.value
+        val membership = organizations.currentMembership()
+        val access = membership?.let { Access.forMembership(it.role) } ?: Access.unsigned
+        val snapshot = subscription.state.value
+        val activeCount = current.items.count { it.status == LocationRules.Active }
+        if (!Entitlements.canCreateLocation(access, snapshot, activeCount)) {
+            ui.update {
+                it.copy(
+                    needsUpgrade = Entitlements.locationLimitReached(snapshot, activeCount),
+                    banner = if (Entitlements.locationLimitReached(snapshot, activeCount)) {
+                        "Your plan includes one active location. Open plans to add another."
+                    } else {
+                        "You cannot add a location."
+                    },
+                )
+            }
+            return
+        }
         if (!current.canCreate) {
             return
         }
@@ -112,6 +165,7 @@ class LocationsController(
                 address = current.draftAddress,
                 zoneCode = current.draftZoneCode,
             )
+            analytics.track(ProductEvent.LocationCreated(created.id, clientId))
             ui.update { latest ->
                 latest.copy(
                     saving = false,

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "allegation",
+    "requirements",
+    "recorded_evidence",
+    "missing_evidence",
+    "exceptions",
+    "neutral_overview"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "allegation": { "type": "string", "minLength": 1 },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["requirementText", "contractualContext"],
+        "additionalProperties": false,
+        "properties": {
+          "requirementText": { "type": "string" },
+          "contractualContext": { "type": "string" }
+        }
+      }
+    },
+    "recorded_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "exceptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "neutral_overview": { "type": "string" }
+  }
+}

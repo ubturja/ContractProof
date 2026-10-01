@@ -6,7 +6,10 @@ import com.contractproof.data.Membership
 import com.contractproof.data.OrganizationFailure
 import com.contractproof.data.OrganizationGateway
 import com.contractproof.domain.Access
+import com.contractproof.domain.Home
 import com.contractproof.feature.auth.AuthController
+import com.contractproof.core.analytics.FakeProductAnalytics
+import com.contractproof.subscription.FakeSubscriptionService
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -20,7 +23,7 @@ class SessionControllerTest {
     fun signUpWithoutMembershipGoesToCompanySetup() = runBlocking {
         val users = RecordingAuthGateway()
         val organizations = RecordingOrganizationGateway(users)
-        val session = SessionController(AuthController(users), organizations, users)
+        val session = sessionController(users, organizations)
         session.restore()
         session.auth.updateEmail("owner@example.com")
         session.auth.updatePassword("secret")
@@ -140,10 +143,23 @@ class SessionControllerTest {
     }
 
     @Test
-    fun clientGoesToHoldWithoutWrites() = runBlocking {
+    fun signOutClearsMembershipAndDestination() = runBlocking {
+        val session = signedInWithRole("owner")
+        assertEquals(SessionDestination.Dashboard, session.destination.value)
+        assertTrue(session.membership.value != null)
+
+        session.signOut()
+
+        assertEquals(SessionDestination.SignedOut, session.destination.value)
+        assertNull(session.membership.value)
+    }
+
+    @Test
+    fun clientGoesToClientHomeWithoutWrites() = runBlocking {
         val session = signedInWithRole("client")
         val access = Access.forMembership(session.membership.value?.role)
         assertEquals(SessionDestination.ClientHold, session.destination.value)
+        assertEquals(Home.ClientHold, access.home)
         assertFalse(access.canAddLocation)
         assertFalse(access.canWriteContracts)
         assertFalse(access.canWriteDisputes)
@@ -156,7 +172,7 @@ private suspend fun signedInWithoutCompany(
     users: RecordingAuthGateway,
     organizations: RecordingOrganizationGateway,
 ): SessionController {
-    val session = SessionController(AuthController(users), organizations, users)
+    val session = sessionController(users, organizations)
     session.restore()
     session.auth.updateEmail("owner@example.com")
     session.auth.updatePassword("secret")
@@ -177,9 +193,23 @@ private suspend fun signedInWithRole(
         locationIds = if (role == "manager") emptyList() else emptyList(),
         clientId = if (role == "client") "c1c1c1c1-c1c1-c1c1-c1c1-c1c1c1c1c1c1" else null,
     )
-    val session = SessionController(AuthController(users), organizations, users)
+    val session = sessionController(users, organizations)
     session.restore()
     return session
+}
+
+private fun sessionController(
+    users: RecordingAuthGateway,
+    organizations: RecordingOrganizationGateway,
+): SessionController {
+    val analytics = FakeProductAnalytics()
+    return SessionController(
+        AuthController(users, analytics),
+        organizations,
+        users,
+        FakeSubscriptionService(),
+        analytics,
+    )
 }
 
 private class RecordingAuthGateway : AuthGateway {

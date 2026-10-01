@@ -1,0 +1,42 @@
+CREATE TABLE task_exception (
+    id TEXT NOT NULL PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    service_job_id TEXT NOT NULL,
+    service_job_requirement_id TEXT NOT NULL,
+    recorded_by TEXT NOT NULL,
+    recorded_at TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    sync_status TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX task_exception_requirement_key
+    ON task_exception(organization_id, service_job_requirement_id);
+
+selectByRequirement:
+SELECT *
+FROM task_exception
+WHERE organization_id = ?
+  AND service_job_requirement_id = ?;
+
+selectForJob:
+SELECT *
+FROM task_exception
+WHERE organization_id = ?
+  AND service_job_id = ?;
+
+upsert:
+INSERT OR REPLACE INTO task_exception(
+    id,
+    organization_id,
+    service_job_id,
+    service_job_requirement_id,
+    recorded_by,
+    recorded_at,
+    reason,
+    sync_status
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteForRequirement:
+DELETE FROM task_exception
+WHERE organization_id = ?
+  AND service_job_requirement_id = ?;

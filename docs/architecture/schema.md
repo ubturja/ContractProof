@@ -20,7 +20,7 @@ Status and role values are `text` with `check` constraints. Names used below are
 
 `private.current_membership()` is `stable` and `security definer`. It reads `auth.uid()` and returns that user's `organization_id`, `role`, `location_ids`, and `client_id`. Row-level security calls it, so `authenticated` can execute that function. The client does not send a trusted organization id or role. Applied grants are in [rls.md](rls.md).
 
-Storage buckets `contracts`, `evidence`, and `reports` are private. Tables store the bucket and object path. They do not store a public URL.
+Storage buckets `contracts`, `evidence`, `dispute-attachments`, and `reports` are private. Tables store the bucket and object path. They do not store a public URL.
 
 ## Shared checks
 
@@ -265,7 +265,8 @@ A weekly visit on one contract and location. Job generation uses the location ti
 | `organization_id` | `uuid` | `not null` |
 | `contract_id` | `uuid` | `not null` |
 | `location_id` | `uuid` | `not null` |
-| `weekday` | `smallint` | `not null`, `weekday between 1 and 7` (`schedule_weekday_iso`) |
+| `frequency` | `text` | `not null default 'weekly'`, `daily` \| `weekdays` \| `weekly` (`schedule_frequency_known`) |
+| `weekday` | `smallint` | `not null`, `weekday between 1 and 7` (`schedule_weekday_iso`); required for `weekly` |
 | `start_time` | `time` | `not null` |
 | `end_time` | `time` | `not null` |
 | `timezone` | `text` | `not null`, `char_length(timezone) > 0` (`schedule_timezone_present`) |
@@ -302,7 +303,7 @@ One visit. `contract_version_id` is pinned when the job is created. A later appr
 | `assigned_user_id` | `uuid` | nullable, foreign key → `users(id)` |
 | `scheduled_start` | `timestamptz` | `not null` |
 | `scheduled_end` | `timestamptz` | `not null` |
-| `status` | `text` | `not null default 'scheduled'`, `status in ('scheduled','in_progress','completed','cancelled')` (`job_status_known`) |
+| `status` | `text` | `not null default 'scheduled'`, `status in ('scheduled','in_progress','completed','cancelled','incomplete','disputed')` (`job_status_known`) |
 | `started_at` | `timestamptz` | nullable |
 | `completed_at` | `timestamptz` | nullable |
 | `completed_by` | `uuid` | nullable, foreign key → `users(id)` |
@@ -315,7 +316,7 @@ The device may supply `id` when it completes a cached job. Server-generated jobs
 
 `unique (organization_id, id)`. `unique (organization_id, id, contract_version_id)` named `job_version_key`, so child rows can pin the same version.
 
-`job_window`: `scheduled_end > scheduled_start`. `job_completion_pair`: `status = 'completed'` requires `started_at`, `completed_at`, and `completed_by`. Other statuses require `completed_at` and `completed_by` to be null. `status = 'in_progress'` requires `started_at`. `status = 'scheduled'` requires `started_at` to be null.
+`job_window`: `scheduled_end > scheduled_start`. `job_completion_pair`: `completed` and `disputed` require `started_at`, `completed_at`, and `completed_by`. `in_progress` and `incomplete` require `started_at` and null completion fields. `scheduled` requires null `started_at` and null completion fields. `cancelled` requires null `completed_at` and `completed_by`.
 
 Foreign keys:
 
@@ -372,6 +373,8 @@ Provenance for one capture. The bytes live in `evidence_files`. One requirement 
 | `organization_id` | `uuid` | `not null` |
 | `service_job_id` | `uuid` | `not null` |
 | `service_job_requirement_id` | `uuid` | `not null` |
+| `evidence_type` | `text` | `not null`, `evidence_type_known` (`photo`, `checklist_completion`, `timestamp`) |
+| `location_id` | `uuid` | nullable, foreign key → `locations(organization_id, id)` |
 | `captured_by` | `uuid` | `not null`, foreign key → `users(id)` |
 | `captured_at` | `timestamptz` | `not null` |
 | `received_at` | `timestamptz` | nullable |
@@ -422,6 +425,8 @@ Foreign key `(organization_id, evidence_record_id)` → `evidence_records(organi
 
 Indexes: unique `evidence_record_id`, unique `(bucket, object_path)`, `(organization_id, sync_status)`.
 
+Objects live in the private Supabase Storage bucket `evidence` at `object_path`. `storage.objects` policies restrict paths to `{organization_id}/{service_job_id}/{service_job_requirement_id}/{evidence_record_id}` for members; cleaners may write on assigned jobs only.
+
 ## exceptions
 
 The recorded reason a requirement was not performed as specified. One requirement has one exception. A retry updates this id.
@@ -461,6 +466,12 @@ The complaint the owner records. Items below are the factual snapshot. The dispu
 | `location_id` | `uuid` | `not null` |
 | `service_date` | `date` | `not null` |
 | `complaint` | `text` | `not null`, `char_length(complaint) > 0` (`dispute_complaint_present`) |
+| `service_job_id` | `uuid` | nullable in migration; required for new rows from the app |
+| `disputed_service_job_requirement_id` | `uuid` | nullable in migration; the requirement the filer selected |
+| `complaint_attachment_object_path` | `text` | nullable |
+| `complaint_attachment_mime_type` | `text` | nullable |
+| `ai_summary_json` | `jsonb` | nullable; updated by `summarize-dispute` |
+| `ai_summary_generated_at` | `timestamptz` | nullable |
 | `recorded_by` | `uuid` | `not null`, foreign key → `users(id)` |
 | `status` | `text` | `not null default 'open'`, `status in ('open','closed')` (`dispute_status_known`) |
 | `sync_status` | `text` | `not null`, `sync_status_known` |
@@ -474,8 +485,10 @@ Foreign keys:
 
 - `(organization_id, client_id)` → `clients(organization_id, id)`
 - `(organization_id, location_id)` → `locations(organization_id, id)`
+- `(organization_id, service_job_id)` → `service_jobs(organization_id, id)`
+- `(organization_id, service_job_id, disputed_service_job_requirement_id)` → `service_job_requirements(organization_id, service_job_id, id)`
 
-`recorded_by`, `client_id`, `location_id`, `service_date`, and `complaint` do not change after insert. `status` may move from `open` to `closed`. `sync_status` may advance until `uploaded`.
+`recorded_by`, `client_id`, `location_id`, `service_date`, `complaint`, `service_job_id`, `disputed_service_job_requirement_id`, and complaint attachment columns do not change after insert. `ai_summary_json` and `ai_summary_generated_at` may be set or replaced after insert. `status` may move from `open` to `closed`. `sync_status` may advance until `uploaded`.
 
 Indexes: unique `(organization_id, id)`, `(organization_id, status, service_date)`, `(organization_id, client_id)`, `(organization_id, location_id)`.
 

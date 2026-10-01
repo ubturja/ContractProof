@@ -19,8 +19,8 @@ begin
       and relation.relkind = 'r'
       and relation.relrowsecurity
       and relation.relforcerowsecurity;
-    if tables <> 19 or forced <> 19 then
-        raise exception 'expected 19 forced tables, found % tables and % forced', tables, forced;
+    if tables <> 20 or forced <> 20 then
+        raise exception 'expected 20 forced tables, found % tables and % forced', tables, forced;
     end if;
     if exists (
         select 1
@@ -68,13 +68,15 @@ insert into public.organization_members (organization_id, user_id, role, client_
     ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0', '44444444-4444-4444-4444-444444444444', 'client', 'c1c1c1c1-c1c1-c1c1-c1c1-c1c1c1c1c1c1', '{}'),
     ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0', '55555555-5555-5555-5555-555555555555', 'cleaner', null, '{}');
 
-insert into public.contracts (id, organization_id, client_id, location_id, title) values
-    ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0', 'c1c1c1c1-c1c1-c1c1-c1c1-c1c1c1c1c1c1', 'd1d1d1d1-d1d1-d1d1-d1d1-d1d1d1d1d1d1', 'Lobby A'),
-    ('e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0', 'c2c2c2c2-c2c2-c2c2-c2c2-c2c2c2c2c2c2', 'd2d2d2d2-d2d2-d2d2-d2d2-d2d2d2d2d2d2', 'Lobby B');
+insert into public.contracts (id, organization_id, client_id, location_id, title, starts_on) values
+    ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0', 'c1c1c1c1-c1c1-c1c1-c1c1-c1c1c1c1c1c1', 'd1d1d1d1-d1d1-d1d1-d1d1-d1d1d1d1d1d1', 'Lobby A', date '2026-01-01'),
+    ('e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0', 'c2c2c2c2-c2c2-c2c2-c2c2-c2c2c2c2c2c2', 'd2d2d2d2-d2d2-d2d2-d2d2-d2d2d2d2d2d2', 'Lobby B', date '2026-01-01');
 
-insert into public.contract_versions (id, organization_id, contract_id, version_number, status, approved_at, approved_by) values
-    ('f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1', 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0', 'e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', 1, 'approved', now(), '11111111-1111-1111-1111-111111111111'),
-    ('f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0', 'e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', 1, 'approved', now(), '22222222-2222-2222-2222-222222222222');
+insert into public.contract_versions (
+    id, organization_id, contract_id, version_number, status, approved_at, approved_by, created_by, effective_on
+) values
+    ('f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1', 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0', 'e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', 1, 'approved', now(), '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', date '2026-01-01'),
+    ('f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0', 'e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', 1, 'approved', now(), '22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', date '2026-01-01');
 
 insert into public.service_jobs (
     id, organization_id, location_id, client_id, contract_id, contract_version_id,
@@ -113,6 +115,14 @@ insert into public.service_jobs (
         timestamptz '2026-09-30 13:00+00',
         timestamptz '2026-09-30 14:00+00'
     );
+
+update public.service_jobs
+set
+    status = 'completed',
+    started_at = timestamptz '2026-09-30 12:00+00',
+    completed_at = timestamptz '2026-09-30 14:00+00',
+    completed_by = '55555555-5555-5555-5555-555555555555'
+where id = 'a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1';
 
 insert into public.disputes (
     id, organization_id, client_id, location_id, service_date, complaint, recorded_by, sync_status
@@ -219,6 +229,7 @@ declare
     contract_count int;
     subscription_count int;
     dispute_count int;
+    job_count int;
     user_count int;
     member_count int;
 begin
@@ -228,12 +239,18 @@ begin
     select count(*) into contract_count from public.contracts;
     select count(*) into subscription_count from public.subscriptions;
     select count(*) into dispute_count from public.disputes;
+    select count(*) into job_count from public.service_jobs;
     select count(*) into user_count from public.users;
     select count(*) into member_count from public.organization_members;
-    if contract_count <> 0 or subscription_count <> 0 or dispute_count <> 0 then
+    if contract_count <> 0 or subscription_count <> 0 then
         raise exception
-            'check 4: client saw contracts %, subscriptions %, disputes %',
-            contract_count, subscription_count, dispute_count;
+            'check 4: client saw contracts %, subscriptions %',
+            contract_count, subscription_count;
+    end if;
+    if dispute_count <> 1 or job_count <> 1 then
+        raise exception
+            'check 4: client saw % disputes and % completed jobs (expected 1 and 1)',
+            dispute_count, job_count;
     end if;
     if user_count <> 1 or member_count <> 1 then
         raise exception 'check 4: client saw % users and % memberships', user_count, member_count;

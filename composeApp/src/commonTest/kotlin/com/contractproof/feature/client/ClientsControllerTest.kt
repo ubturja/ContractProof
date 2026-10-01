@@ -11,6 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import com.contractproof.core.analytics.NoOpProductAnalytics
 import kotlinx.coroutines.runBlocking
 
 class ClientsControllerTest {
@@ -18,7 +19,7 @@ class ClientsControllerTest {
     fun ownerCreateThenList() = runBlocking {
         val organizations = FixedOrganizationGateway(role = "owner")
         val gateway = MemoryClientGateway(organizations)
-        val controller = ClientsController(organizations, gateway)
+        val controller = ClientsController(organizations, gateway, NoOpProductAnalytics())
         controller.refresh()
         controller.updateDraftName("Lobby")
 
@@ -42,7 +43,7 @@ class ClientsControllerTest {
                 status = ClientRules.Active,
             ),
         )
-        val controller = ClientsController(organizations, gateway)
+        val controller = ClientsController(organizations, gateway, NoOpProductAnalytics())
         controller.refresh()
         assertEquals(1, controller.state.value.items.size)
         assertFalse(controller.state.value.canWrite)

@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import com.contractproof.core.design.CpButton
 import com.contractproof.core.design.CpButtonStyle
 import com.contractproof.core.design.CpScreenSurface
@@ -18,6 +21,7 @@ import com.contractproof.core.design.CpTitleBar
 @Composable
 fun LoginScreen(
     state: AuthUiState,
+    showDemoCredentialsHint: Boolean = false,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSubmit: () -> Unit,
@@ -27,6 +31,7 @@ fun LoginScreen(
     AuthForm(
         title = "Sign in",
         state = state,
+        showDemoCredentialsHint = showDemoCredentialsHint,
         onEmailChange = onEmailChange,
         onPasswordChange = onPasswordChange,
         submitLabel = if (state.phase == AuthPhase.SigningIn) "Signing in" else "Sign in",
@@ -125,6 +130,7 @@ fun ResetPasswordScreen(
 private fun AuthForm(
     title: String,
     state: AuthUiState,
+    showDemoCredentialsHint: Boolean = false,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     submitLabel: String,
@@ -145,16 +151,27 @@ private fun AuthForm(
                 if (state.banner != null) {
                     Text(text = state.banner, style = MaterialTheme.typography.bodyLarge)
                 }
+                if (showDemoCredentialsHint) {
+                    DemoCredentialsHint()
+                }
                 CpTextField(
                     value = state.email,
                     onValueChange = onEmailChange,
                     label = "Email",
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                    ),
                 )
                 CpTextField(
                     value = state.password,
                     onValueChange = onPasswordChange,
                     label = "Password",
                     concealed = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                    ),
                 )
                 CpButton(
                     label = submitLabel,

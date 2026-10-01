@@ -1,0 +1,77 @@
+CREATE TABLE service_job (
+    id TEXT NOT NULL PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    client_id TEXT NOT NULL,
+    client_name TEXT NOT NULL,
+    location_id TEXT NOT NULL,
+    location_name TEXT NOT NULL,
+    location_timezone TEXT NOT NULL,
+    service_date TEXT NOT NULL,
+    scheduled_start TEXT NOT NULL,
+    scheduled_end TEXT NOT NULL,
+    assignee_user_id TEXT,
+    assignee_display_name TEXT,
+    status TEXT NOT NULL,
+    started_at TEXT,
+    completed_at TEXT,
+    completed_by TEXT,
+    contract_id TEXT NOT NULL,
+    contract_version_id TEXT NOT NULL,
+    schedule_id TEXT,
+    mandatory_total INTEGER NOT NULL,
+    mandatory_satisfied INTEGER NOT NULL,
+    coverage_percent INTEGER NOT NULL,
+    evidence_state TEXT NOT NULL,
+    sync_status TEXT NOT NULL,
+    is_demo INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX service_job_assignee_date_idx
+    ON service_job(organization_id, assignee_user_id, service_date);
+
+selectById:
+SELECT *
+FROM service_job
+WHERE organization_id = ?
+  AND id = ?;
+
+listAssignedOnDate:
+SELECT *
+FROM service_job
+WHERE organization_id = ?
+  AND assignee_user_id = ?
+  AND service_date = ?
+ORDER BY scheduled_start;
+
+upsert:
+INSERT OR REPLACE INTO service_job(
+    id,
+    organization_id,
+    client_id,
+    client_name,
+    location_id,
+    location_name,
+    location_timezone,
+    service_date,
+    scheduled_start,
+    scheduled_end,
+    assignee_user_id,
+    assignee_display_name,
+    status,
+    started_at,
+    completed_at,
+    completed_by,
+    contract_id,
+    contract_version_id,
+    schedule_id,
+    mandatory_total,
+    mandatory_satisfied,
+    coverage_percent,
+    evidence_state,
+    sync_status,
+    is_demo
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteAllForOrganization:
+DELETE FROM service_job
+WHERE organization_id = ?;

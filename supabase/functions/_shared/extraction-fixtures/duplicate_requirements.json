@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "extracted_at": "2026-10-01T12:00:00Z",
+  "pipeline": {
+    "text_engine": "unpdf",
+    "llm_provider": "gemini",
+    "llm_model": "gemini-2.0-flash",
+    "used_fallback": false
+  },
+  "document": {
+    "page_count": 1,
+    "text_char_count": 200,
+    "ocr_page_indexes": [],
+    "warnings": []
+  },
+  "visits": [
+    {
+      "weekday": 1,
+      "start_time": "09:00",
+      "end_time": "11:00",
+      "timezone": "America/New_York",
+      "starts_on": "2026-10-01",
+      "ends_on": null,
+      "confidence": 0.8
+    }
+  ],
+  "requirements": [
+    {
+      "key": "req_dup",
+      "task": "First task",
+      "requires_photo": true,
+      "is_mandatory": true,
+      "zone_code": null,
+      "confidence": 0.9,
+      "evidence_quote": null
+    },
+    {
+      "key": "req_dup",
+      "task": "Second task with same key",
+      "requires_photo": true,
+      "is_mandatory": true,
+      "zone_code": null,
+      "confidence": 0.85,
+      "evidence_quote": null
+    }
+  ]
+}

@@ -6,6 +6,7 @@ data class Membership(
     val role: String,
     val locationIds: List<String> = emptyList(),
     val clientId: String? = null,
+    val userId: String = "",
 )
 
 sealed class OrganizationFailure : Exception() {

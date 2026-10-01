@@ -1,0 +1,30 @@
+CREATE TABLE user_context (
+    user_id TEXT NOT NULL PRIMARY KEY,
+    email TEXT NOT NULL,
+    organization_id TEXT NOT NULL,
+    organization_name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    location_ids_json TEXT NOT NULL,
+    client_id TEXT,
+    cached_at TEXT NOT NULL
+);
+
+selectCurrent:
+SELECT *
+FROM user_context
+LIMIT 1;
+
+upsert:
+INSERT OR REPLACE INTO user_context(
+    user_id,
+    email,
+    organization_id,
+    organization_name,
+    role,
+    location_ids_json,
+    client_id,
+    cached_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+clear:
+DELETE FROM user_context;

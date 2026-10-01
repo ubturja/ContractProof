@@ -1,6 +1,7 @@
 .gradle/
 build/
 local.properties
+androidApp/google-services.json
 .env
 .env.*
 .idea/
@@ -13,3 +14,10 @@ captures/
 *.apk
 *.aab
 *.ap_
+keystore.properties
+*.jks
+*.keystore
+dist/
+release/
+.jdk17/
+.tools/

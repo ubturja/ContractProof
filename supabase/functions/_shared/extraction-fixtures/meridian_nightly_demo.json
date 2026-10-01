@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "extracted_at": "2026-10-01T14:00:00Z",
+  "pipeline": {
+    "text_engine": "unpdf",
+    "llm_provider": "gemini",
+    "llm_model": "demo-fixture",
+    "used_fallback": false
+  },
+  "document": {
+    "page_count": 2,
+    "text_char_count": 1650,
+    "ocr_page_indexes": [],
+    "warnings": []
+  },
+  "visits": [
+    {
+      "weekday": 4,
+      "start_time": "09:00",
+      "end_time": "11:00",
+      "timezone": "America/New_York",
+      "starts_on": "2026-10-01",
+      "ends_on": null,
+      "confidence": 0.95
+    }
+  ],
+  "requirements": [
+    {
+      "key": "req_mer_1",
+      "task": "Empty trash receptacles",
+      "requires_photo": true,
+      "is_mandatory": true,
+      "zone_code": null,
+      "confidence": 0.93,
+      "evidence_quote": "All lobby trash receptacles emptied each service night"
+    },
+    {
+      "key": "req_mer_2",
+      "task": "Vacuum main walkway",
+      "requires_photo": true,
+      "is_mandatory": true,
+      "zone_code": null,
+      "confidence": 0.91,
+      "evidence_quote": "Main walkway vacuumed nightly"
+    }
+  ]
+}

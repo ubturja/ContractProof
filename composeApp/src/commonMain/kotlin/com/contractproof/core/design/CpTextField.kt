@@ -5,8 +5,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
@@ -19,6 +22,7 @@ fun CpTextField(
     error: String? = null,
     singleLine: Boolean = true,
     concealed: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
 ) {
     OutlinedTextField(
         value = value,
@@ -26,6 +30,7 @@ fun CpTextField(
         modifier = modifier.fillMaxWidth(),
         label = { Text(label) },
         singleLine = singleLine,
+        keyboardOptions = keyboardOptions,
         visualTransformation = if (concealed) {
             PasswordVisualTransformation()
         } else {

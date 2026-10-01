@@ -7,13 +7,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import com.contractproof.core.analytics.NoOpProductAnalytics
 import kotlinx.coroutines.runBlocking
 
 class AuthControllerTest {
     @Test
     fun restoreWithEmptyStoreSignsOut() = runBlocking {
         val gateway = FakeAuthGateway()
-        val controller = AuthController(gateway)
+        val controller = AuthController(gateway, NoOpProductAnalytics())
 
         controller.restore()
 
@@ -24,7 +25,7 @@ class AuthControllerTest {
     @Test
     fun restoreWithStoredSessionSignsIn() = runBlocking {
         val gateway = FakeAuthGateway(storedSession = true)
-        val controller = AuthController(gateway)
+        val controller = AuthController(gateway, NoOpProductAnalytics())
 
         controller.restore()
 
@@ -34,7 +35,7 @@ class AuthControllerTest {
     @Test
     fun restoreWithUnreadableStoreSignsOutOnce() = runBlocking {
         val gateway = FakeAuthGateway(storedSession = null)
-        val controller = AuthController(gateway)
+        val controller = AuthController(gateway, NoOpProductAnalytics())
 
         controller.restore()
 
@@ -117,7 +118,7 @@ class AuthControllerTest {
     @Test
     fun signOutReturnsToSignedOut() = runBlocking {
         val gateway = FakeAuthGateway(storedSession = true)
-        val controller = AuthController(gateway)
+        val controller = AuthController(gateway, NoOpProductAnalytics())
         controller.restore()
 
         controller.signOut()
@@ -143,7 +144,7 @@ class AuthControllerTest {
 }
 
 private suspend fun signedOut(gateway: FakeAuthGateway): AuthController {
-    val controller = AuthController(gateway)
+    val controller = AuthController(gateway, NoOpProductAnalytics())
     controller.restore()
     return controller
 }

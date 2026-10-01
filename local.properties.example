@@ -1,0 +1,22 @@
+# Copy to local.properties (gitignored). Required for Android builds.
+
+sdk.dir=/path/to/Android/Sdk
+
+# Supabase (anon key only — never the service role key)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-or-publishable-key
+
+# RevenueCat public SDK key (Test Store for hackathon APK)
+REVENUECAT_API_KEY=your-revenuecat-public-sdk-key
+REVENUECAT_ENTITLEMENT_PRO=pro
+REVENUECAT_ENTITLEMENT_BUSINESS=business
+
+# Optional analytics / observability (leave empty to disable)
+POSTHOG_API_KEY=
+POSTHOG_HOST=
+SENTRY_DSN=
+SENTRY_ENVIRONMENT=
+
+# Debug-only demo helpers (ignored for release behavior when APK is not debuggable)
+DEMO_SHOW_CREDENTIALS=false
+DEMO_BYPASS_SUBSCRIPTION=false

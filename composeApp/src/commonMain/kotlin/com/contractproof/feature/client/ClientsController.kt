@@ -1,5 +1,7 @@
 package com.contractproof.feature.client
 
+import com.contractproof.core.analytics.ProductAnalytics
+import com.contractproof.core.analytics.ProductEvent
 import com.contractproof.data.ClientFailure
 import com.contractproof.data.ClientGateway
 import com.contractproof.data.OrganizationGateway
@@ -30,6 +32,7 @@ data class ClientsUiState(
 class ClientsController(
     private val organizations: OrganizationGateway,
     private val clients: ClientGateway,
+    private val analytics: ProductAnalytics,
 ) {
     private val ui = MutableStateFlow(ClientsUiState())
     val state: StateFlow<ClientsUiState> = ui.asStateFlow()
@@ -86,6 +89,7 @@ class ClientsController(
         ui.update { it.copy(saving = true, banner = null) }
         try {
             val created = clients.create(current.draftName)
+            analytics.track(ProductEvent.ClientCreated(created.id))
             ui.update { latest ->
                 latest.copy(
                     saving = false,

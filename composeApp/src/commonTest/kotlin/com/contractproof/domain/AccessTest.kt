@@ -61,7 +61,9 @@ class AccessTest {
         assertFalse(access.canWriteContracts)
         assertFalse(access.canWriteDisputes)
         assertFalse(access.canOpenAssignedJobs)
-        assertFalse(access.canOpenSettings)
+        assertTrue(access.canOpenClientServiceRecords)
+        assertTrue(access.canFileClientDispute)
+        assertTrue(access.canOpenSettings)
         assertFalse(access.canCreateCompany)
     }
 

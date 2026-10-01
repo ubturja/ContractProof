@@ -22,6 +22,55 @@ val generateSupabaseConfig = tasks.register<GenerateSupabaseConfigTask>("generat
     outputDirectory.set(generatedSupabaseDirectory)
 }
 
+val generatedRevenueCatDirectory = layout.buildDirectory.dir("generated/revenuecat")
+
+val generateRevenueCatConfig = tasks.register<GenerateRevenueCatConfigTask>("generateRevenueCatConfig") {
+    apiKeyFromEnvironment.set(providers.environmentVariable("REVENUECAT_API_KEY").orElse(""))
+    apiKeyFromGradle.set(providers.gradleProperty("REVENUECAT_API_KEY").orElse(""))
+    entitlementProFromEnvironment.set(providers.environmentVariable("REVENUECAT_ENTITLEMENT_PRO").orElse(""))
+    entitlementBusinessFromEnvironment.set(
+        providers.environmentVariable("REVENUECAT_ENTITLEMENT_BUSINESS").orElse(""),
+    )
+    demoBypassFromEnvironment.set(providers.environmentVariable("DEMO_BYPASS_SUBSCRIPTION").orElse(""))
+    demoBypassFromGradle.set(providers.gradleProperty("DEMO_BYPASS_SUBSCRIPTION").orElse(""))
+    localPropertiesFile.set(supabaseLocalProperties)
+    outputDirectory.set(generatedRevenueCatDirectory)
+}
+
+val generatedPostHogDirectory = layout.buildDirectory.dir("generated/posthog")
+
+val generatePostHogConfig = tasks.register<GeneratePostHogConfigTask>("generatePostHogConfig") {
+    apiKeyFromEnvironment.set(providers.environmentVariable("POSTHOG_API_KEY").orElse(""))
+    apiKeyFromGradle.set(providers.gradleProperty("POSTHOG_API_KEY").orElse(""))
+    hostFromEnvironment.set(providers.environmentVariable("POSTHOG_HOST").orElse(""))
+    hostFromGradle.set(providers.gradleProperty("POSTHOG_HOST").orElse(""))
+    localPropertiesFile.set(supabaseLocalProperties)
+    outputDirectory.set(generatedPostHogDirectory)
+}
+
+val generatedDemoDirectory = layout.buildDirectory.dir("generated/demo")
+
+val generateDemoConfig = tasks.register<GenerateDemoConfigTask>("generateDemoConfig") {
+    showCredentialsFromEnvironment.set(providers.environmentVariable("DEMO_SHOW_CREDENTIALS").orElse(""))
+    showCredentialsFromGradle.set(providers.gradleProperty("DEMO_SHOW_CREDENTIALS").orElse(""))
+    localPropertiesFile.set(supabaseLocalProperties)
+    outputDirectory.set(generatedDemoDirectory)
+}
+
+val generatedSentryDirectory = layout.buildDirectory.dir("generated/sentry")
+
+val generateSentryConfig = tasks.register<GenerateSentryConfigTask>("generateSentryConfig") {
+    dsnFromEnvironment.set(providers.environmentVariable("SENTRY_DSN").orElse(""))
+    dsnFromGradle.set(providers.gradleProperty("SENTRY_DSN").orElse(""))
+    environmentFromEnvironment.set(providers.environmentVariable("SENTRY_ENVIRONMENT").orElse(""))
+    environmentFromGradle.set(providers.gradleProperty("SENTRY_ENVIRONMENT").orElse(""))
+    debugBuild.set(
+        providers.gradleProperty("SENTRY_DEBUG_BUILD").orElse("true").map { it.toBoolean() },
+    )
+    localPropertiesFile.set(supabaseLocalProperties)
+    outputDirectory.set(generatedSentryDirectory)
+}
+
 kotlin {
     android {
         namespace = "com.contractproof.app.shared"
@@ -52,6 +101,7 @@ kotlin {
     sourceSets {
         commonMain {
             kotlin.srcDir(generatedSupabaseDirectory)
+            kotlin.srcDir(generatedDemoDirectory)
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
@@ -60,6 +110,7 @@ kotlin {
                 implementation(libs.compose.material.icons.core)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.kotlinx.datetime)
                 implementation(libs.koin.core)
                 implementation(libs.koin.compose)
                 implementation(libs.ktor.client.core)
@@ -70,14 +121,31 @@ kotlin {
                 implementation(libs.supabase.kt)
                 implementation(libs.supabase.auth)
                 implementation(libs.supabase.postgrest)
+                implementation(libs.supabase.storage)
             }
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.sqldelight.runtime)
+            implementation(libs.sqldelight.sqlite.driver)
+        }
+        androidMain {
+            kotlin.srcDir(generatedRevenueCatDirectory)
+            kotlin.srcDir(generatedPostHogDirectory)
+            kotlin.srcDir(generatedSentryDirectory)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.revenuecat.purchases)
+            implementation(libs.posthog.android)
+            implementation(libs.sentry.android)
+            implementation(libs.androidx.core)
+            implementation(libs.androidx.camera.core)
+            implementation(libs.androidx.camera.camera2)
+            implementation(libs.androidx.camera.lifecycle)
+            implementation(libs.androidx.camera.view)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -87,7 +155,13 @@ kotlin {
 }
 
 tasks.withType<KotlinCompilationTask<*>>().configureEach {
-    dependsOn(generateSupabaseConfig)
+    dependsOn(
+        generateSupabaseConfig,
+        generateRevenueCatConfig,
+        generatePostHogConfig,
+        generateSentryConfig,
+        generateDemoConfig,
+    )
 }
 
 sqldelight {
@@ -96,4 +170,13 @@ sqldelight {
             packageName.set("com.contractproof.data.local")
         }
     }
+}
+
+tasks.register("checkIosCompile") {
+    group = "verification"
+    description = "Compile Kotlin for iOS device and simulator (no link on Linux CI)."
+    dependsOn(
+        "compileKotlinIosSimulatorArm64",
+        "compileKotlinIosArm64",
+    )
 }

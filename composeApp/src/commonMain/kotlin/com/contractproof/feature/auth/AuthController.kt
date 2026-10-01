@@ -1,5 +1,7 @@
 package com.contractproof.feature.auth
 
+import com.contractproof.core.analytics.ProductAnalytics
+import com.contractproof.core.analytics.ProductEvent
 import com.contractproof.data.AuthFailure
 import com.contractproof.data.AuthGateway
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +41,7 @@ data class AuthUiState(
 
 class AuthController(
     private val gateway: AuthGateway,
+    private val analytics: ProductAnalytics,
 ) {
     private val signedIn = MutableStateFlow(AuthUiState())
     val state: StateFlow<AuthUiState> = signedIn.asStateFlow()
@@ -118,6 +121,7 @@ class AuthController(
         }
         try {
             val hasSession = gateway.signUp(email, password)
+            analytics.track(ProductEvent.AccountCreated)
             signedIn.update { latest ->
                 if (hasSession) {
                     latest.copy(phase = AuthPhase.SignedIn, password = "", banner = null)
